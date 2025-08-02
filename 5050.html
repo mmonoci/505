@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>505 - Arctic Monkeys</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 20px;
+      height: 100vh;
+    }
+
+    h1 {
+      color: #f1c40f;
+      font-size: 32px;
+      margin-bottom: 10px;
+    }
+
+    audio {
+      margin-top: 10px;
+      width: 80%;
+    }
+
+    #lyrics {
+      margin-top: 20px;
+      width: 80%;
+      text-align: center;
+      font-size: 20px;
+      height: 220px;
+      overflow-y: auto;
+      scroll-behavior: smooth;
+      border-top: 1px solid #444;
+      border-bottom: 1px solid #444;
+      padding: 10px 0;
+    }
+
+    .line {
+      opacity: 0.3;
+      transition: opacity 0.3s, font-size 0.3s;
+      margin: 4px 0;
+    }
+
+    .active {
+      opacity: 1;
+      font-size: 24px;
+      color: #f1c40f;
+    }
+
+    .footer {
+      margin-top: auto;
+      margin-bottom: 10px;
+      font-size: 14px;
+      color: #888;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>505 - Arctic Monkeys</h1>
+  <audio id="audio" controls>
+    <source src="https://files.catbox.moe/1a09lx.mp3" type="audio/mpeg" />
+    Your browser does not support the audio element.
+  </audio>
+  <div id="lyrics"></div>
+
+  <div class="footer">Made by Farxly</div>
+
+  <script>
+    const lrc = `[00:13.00]I'm going back to 505
+[00:16.00]If it's a seven hour flight or a forty-five minute drive
+[00:23.00]In my imagination, you're waitin' lyin' on your side
+[00:30.00]With your hands between your thighs
+[00:40.00]Stop and wait a sec
+[00:44.00]When you look at me like that, my darlin', what did you expect?
+[00:50.00]I'd probably still adore you with your hands around my neck
+[00:57.00]Or I did last time I checked
+[01:08.00]Not shy of a spark
+[01:12.00]The knife twists at the thought that I should fall short of the mark
+[01:18.00]Frightened by the bite, though it's no harsher than the bark
+[01:25.00]The middle of adventure, such a perfect place to start
+[01:33.00]I'm going back to 505
+[01:39.00]If it's a seven hour flight or a forty-five minute drive
+[01:46.00]In my imagination, you're waitin' lyin' on your side
+[01:52.00]With your hands between your thighs
+[01:56.00](Instrumental / jeda musik)
+[02:29.00]But I crumble completely when you cry
+[02:34.00]It seems like once again you've had to greet me with goodbye
+[02:40.00]I'm always just about to go and spoil the surprise
+[02:46.00]Take my hands off of your eyes too soon
+[02:56.00]I'm going back to 505
+[03:01.00]If it's a seven hour flight or a forty-five minute drive
+[03:07.00]In my imagination, you're waitin' lyin' on your side
+[03:14.00]With your hands between your thighs and a smile
+[03:18.00](Outro instrumental)`;
+
+    const audio = document.getElementById('audio');
+    const lyricsDiv = document.getElementById('lyrics');
+    const lines = lrc.split('\n').filter(line => /\[\d+:\d+\.\d+\]/.test(line));
+    const parsed = lines.map(line => {
+      const match = line.match(/\[(\d+):(\d+\.\d+)\](.+)/);
+      return {
+        time: parseInt(match[1]) * 60 + parseFloat(match[2]),
+        text: match[3]
+      };
+    });
+
+    parsed.forEach(({ text }) => {
+      const p = document.createElement('p');
+      p.className = 'line';
+      p.textContent = text;
+      lyricsDiv.appendChild(p);
+    });
+
+    const children = lyricsDiv.children;
+
+    // Scroll manual deteksi
+    let userScrolling = false;
+    let scrollTimeout = null;
+
+    lyricsDiv.addEventListener('scroll', () => {
+      userScrolling = true;
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        userScrolling = false;
+      }, 2000);
+    });
+
+    audio.ontimeupdate = () => {
+      const currentTime = audio.currentTime;
+      for (let i = 0; i < parsed.length; i++) {
+        if (currentTime >= parsed[i].time && (i === parsed.length - 1 || currentTime < parsed[i + 1].time)) {
+          for (let j = 0; j < children.length; j++) {
+            children[j].classList.remove('active');
+          }
+          children[i].classList.add('active');
+
+          if (!userScrolling) {
+            const activeLine = children[i];
+            const offsetTop = activeLine.offsetTop;
+            const containerHeight = lyricsDiv.clientHeight;
+
+            // Pas di atas tengah (35% layar)
+            lyricsDiv.scrollTop = offsetTop - containerHeight * 1.00;
+          }
+
+          break;
+        }
+      }
+    };
+  </script>
+</body>
+</html>
